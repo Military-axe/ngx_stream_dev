@@ -165,16 +165,6 @@ int log_info(ngx_stream_session_t *s, tran_t *info)
 	ip2str(info->sockaddr->dst_addr, ip_add2);
 	sprintf(temp, "[%s] %s:%d --> %s:%d", nowtime, ip_addr, info->sockaddr->src_port, ip_add2, info->sockaddr->dst_port);
 
-	/* lock file */
-	pid = getpid();
-	if (trylock_fd(clfn->fd)){
-		ngx_log_error(NGX_LOG_DEBUG,r->log,0," %s file lock by %d ",realfilename,pid);
-	}else{
-		ngx_log_error(NGX_LOG_DEBUG,r->log,0,"waiting for lock %s file",realfilename);
-		waitlock_fd(clfn->fd);
-		ngx_log_error(NGX_LOG_DEBUG,r->log,0," %s file lock by %d ",realfilename,pid);
-	}
-
 	write(clfn->fd, temp, 79);
 	if (info->protocol == TCP)
 	{
@@ -237,8 +227,6 @@ int log_info(ngx_stream_session_t *s, tran_t *info)
 	}
 	write(clfn->fd, "\n", 1);
 	ngx_close_file(clfn->fd);
-	/* unlock file */
-	unlock_fd(clfn->fd);
 }
 
 void get_data_from_nginx(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t from_upstream, tran_t *t)
