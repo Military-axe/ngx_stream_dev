@@ -36,64 +36,6 @@ typedef struct transport_struct
 #define new_cs_info_t() (cs_info_t *)calloc(sizeof(cs_info_t), 1)
 #define new_tran_t() (tran_t *)calloc(sizeof(tran_t), 1)
 
-/* lock file function */
-
-/**
- * @brief 尝试获取文件锁
- * @details 获取文件锁时不会阻塞进程, 获取不到锁时，立即返回不会等待
- * @param fd 文件描述符
- * @return 是否成功获取文件锁
- *   @retval TRUE 获取锁成功
- *   @retval FALSE 获取锁失败
- * @attention 这里只是建议性锁，每个使用上锁文件的进程都要检查是否有锁存在，
- * 内核不对读写操作做内部检查和强制保护
- */
-int trylock_fd(int fd)
-{
-    if (flock(fd, LOCK_EX|LOCK_NB) == 0) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
-/**
- * @brief 获取锁或等待
- * @details 获取文件锁时会阻塞进程, 获取不到锁时，一直等到获取成功
- * @param fd 文件描述符
- * @return 是否成功获取文件锁
- *   @retval TRUE 获取锁成功
- *   @retval FALSE 获取锁失败
- * @attention 这里只是建议性锁，每个使用上锁文件的进程都要检查是否有锁存在，
- * 内核不对读写操作做内部检查和强制保护
- */
-int waitlock_fd(int fd)
-{
-    if (flock(fd, LOCK_EX) == 0) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
-/**
- * @brief 释放文件锁
- * @param fd 文件描述符
- * @return 是否成功释放文件锁
- *   @retval TRUE 释放锁成功
- *   @retval FALSE 释放锁失败
- */
-int unlock_fd(int fd)
-{
-    if (flock(fd, LOCK_UN) == 0) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
-
-
 void ip2str(uint32_t ip, char *s)
 {
 	/**
@@ -134,11 +76,12 @@ int log_info(ngx_stream_session_t *s, tran_t *info)
 	strftime(nowtime, 20, "%Y-%m-%d %H:%M:%S", ltime);
 
 	/* nginx file struct */
-	char *realfilename = "./my.log";
-	file->fd = ngx_open_file(realfilename, NGX_FILE_WRONLY | NGX_FILE_CREATE_OR_OPEN, NGX_FILE_OPEN, 0);
+	char realfilename[20] = {0};
+	sprintf(realfilename,"./my_%d.log",getpid());
+	file->fd = ngx_open_file(realfilename, NGX_FILE_CREATE_OR_OPEN, NGX_FILE_APPEND, 777);
 	if (file->fd == -1)
 	{
-		ngx_log_error(NGX_LOG_ERR, r->log, 0, "ngx_stream_dumpdata_module.h:77 file->fd = -1; Could not open file");
+		ngx_log_error(NGX_LOG_ERR, r->log, 0, "ngx_stream_dumpdata_module.h:77 file->fd = -1;");
 		return NGX_ERROR;
 	}
 
