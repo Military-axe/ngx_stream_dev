@@ -33,8 +33,8 @@ typedef struct transport_struct
 	uint16_t data_len;	 /* 数据长度 */
 } tran_t;
 
-#define new_cs_info_t() (cs_info_t *)calloc(sizeof(cs_info_t), 1)
-#define new_tran_t() (tran_t *)calloc(sizeof(tran_t), 1)
+#define new_cs_info_t(r) (cs_info_t *)ngx_palloc(r->pool, sizeof(cs_info_t))
+#define new_tran_t(r) (tran_t *)ngx_palloc(r->pool,sizeof(tran_t))
 
 void ip2str(uint32_t ip, char *s)
 {
@@ -43,7 +43,7 @@ void ip2str(uint32_t ip, char *s)
 	 * 参数：ip -- uint32_t的一个ip值
 	 *        s -- char* 指针指向一个空字符数组，用于存储转换结果
 	 */
-	sprintf(s, "%d.%d.%d.%d", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, ip >> 24);
+	sprintf(s, "%d.%d.%d.%d\x00", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, ip >> 24);
 }
 
 int log_info(ngx_stream_session_t *s, tran_t *info)
@@ -102,14 +102,14 @@ int log_info(ngx_stream_session_t *s, tran_t *info)
 
 	// char *ip_addr = (char *)malloc(sizeof(char) * 4);
 	// char *ip_add2 = (char *)malloc(sizeof(char) * 4);
-	char *ip_addr = (char *)ngx_palloc(r->pool, sizeof(char) * 4);
-	char *ip_add2 = (char *)ngx_palloc(r->pool, sizeof(char) * 4);
+	char *ip_addr = (char *)ngx_palloc(r->pool, sizeof(char) * 16);
+	char *ip_add2 = (char *)ngx_palloc(r->pool, sizeof(char) * 16);
 	char temp[80] = {0};
 	ip2str(info->sockaddr->src_addr, ip_addr);
 	ip2str(info->sockaddr->dst_addr, ip_add2);
 	sprintf(temp, "[%s] %s:%d --> %s:%d", nowtime, ip_addr, info->sockaddr->src_port, ip_add2, info->sockaddr->dst_port);
 
-	write(clfn->fd, temp, 79);
+	write(clfn->fd, temp, strlen(temp));
 	if (info->protocol == TCP)
 	{
 		write(clfn->fd, " TCP", 4);
@@ -226,8 +226,8 @@ void get_data_from_nginx(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t fr
 
 void test(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t from_upstream)
 {
-	tran_t *t = new_tran_t();
-	t->sockaddr = new_cs_info_t();
+	tran_t *t = new_tran_t(s->connection);
+	t->sockaddr = new_cs_info_t(s->connection);
 	get_data_from_nginx(s, in, from_upstream, t);
 	log_info(s, t);
 }
