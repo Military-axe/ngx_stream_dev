@@ -12,7 +12,7 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_stream.h>
-#include <sys/file.h>
+#include <errno.h> 
 
 #define TCP 0x01
 #define UDP 0x02
@@ -77,11 +77,12 @@ int log_info(ngx_stream_session_t *s, tran_t *info)
 
 	/* nginx file struct */
 	char realfilename[20] = {0};
-	sprintf(realfilename,"./my_%d.log",getpid());
+	sprintf(realfilename,"./runtime/logs/my_%d.log",getpid());
 	file->fd = ngx_open_file(realfilename, NGX_FILE_CREATE_OR_OPEN, NGX_FILE_APPEND, 777);
 	if (file->fd == -1)
 	{
 		ngx_log_error(NGX_LOG_ERR, r->log, 0, "ngx_stream_dumpdata_module.h:77 file->fd = -1;");
+		ngx_log_error(NGX_LOG_ERR, r->log, 0, "open file error code: %d",errno);
 		return NGX_ERROR;
 	}
 
