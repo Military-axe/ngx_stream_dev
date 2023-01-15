@@ -13,9 +13,19 @@
 #include <ngx_core.h>
 #include <ngx_stream.h>
 #include <errno.h> 
+// #include "test_module.c"
 
 #define TCP 0x01
 #define UDP 0x02
+
+typedef struct {
+    char *name;
+    ngx_uint_t on_off;
+} modules_switch;
+
+typedef struct {
+    ngx_array_t *rules;
+} module_srv_conf_t;
 
 typedef struct client_server_info_struct
 {
@@ -55,18 +65,19 @@ int log_info(ngx_stream_session_t *s, tran_t *info)
 	 * 参数: s -- ngx_stream_session_t* 指针 
 	 *      info -- tran_t* 类型存储结构
 	 */
-	ngx_pool_cleanup_t *cln;
-	ngx_pool_cleanup_file_t *clfn;
-	ngx_file_t *file;
+	// ngx_pool_cleanup_t *cln;
+	// ngx_pool_cleanup_file_t *clfn;
+	// ngx_file_t *file;
 	ngx_connection_t *r;
 	pid_t pid;
+	int fd;
 
 	r = s->connection;
-	file = (ngx_file_t *)ngx_palloc(r->pool, sizeof(ngx_file_t));
-	if (file == NULL)
-	{
-		return NGX_ERROR;
-	}
+	// file = (ngx_file_t *)ngx_palloc(r->pool, sizeof(ngx_file_t));
+	// if (file == NULL)
+	// {
+	// 	return NGX_ERROR;
+	// }
 	/* format time */
 	time_t curtime;
 	struct tm *ltime;
@@ -78,27 +89,27 @@ int log_info(ngx_stream_session_t *s, tran_t *info)
 	/* nginx file struct */
 	char realfilename[20] = {0};
 	sprintf(realfilename,"./runtime/logs/my_%d.log",getpid());
-	file->fd = ngx_open_file(realfilename, NGX_FILE_CREATE_OR_OPEN, NGX_FILE_APPEND, 777);
-	if (file->fd == -1)
+	fd = ngx_open_file(realfilename, NGX_FILE_CREATE_OR_OPEN, NGX_FILE_APPEND, 777);
+	if (fd == -1)
 	{
-		ngx_log_error(NGX_LOG_ERR, r->log, 0, "ngx_stream_dumpdata_module.h:77 file->fd = -1;");
+		// ngx_log_error(NGX_LOG_ERR, r->log, 0, "ngx_stream_dumpdata_module.h:77 fd = -1;");
 		ngx_log_error(NGX_LOG_ERR, r->log, 0, "open file error code: %d",errno);
 		return NGX_ERROR;
 	}
 
-	file->name.len = ngx_strlen(realfilename);
-	file->name.data = (u_char *)realfilename;
-	file->log = r->pool->log;
-	cln = ngx_pool_cleanup_add(r->pool, sizeof(ngx_pool_cleanup_file_t));
-	if (cln == NULL)
-	{
-		return NGX_ERROR;
-	}
-	clfn = (ngx_pool_cleanup_file_t *)cln->data; // 此处要特别注意，让clfn指针指向上面ngx_pool_cleanup_add函数内分配的存放ngx_pool_cleanup_file_t的空间。
-	clfn->fd = file->fd;
-	clfn->name = (u_char *)realfilename;
-	clfn->log = r->pool->log;
-	cln->handler = ngx_pool_cleanup_file;
+	// file->name.len = ngx_strlen(realfilename);
+	// file->name.data = (u_char *)realfilename;
+	// file->log = r->pool->log;
+	// cln = ngx_pool_cleanup_add(r->pool, sizeof(ngx_pool_cleanup_file_t));
+	// if (cln == NULL)
+	// {
+	// 	return NGX_ERROR;
+	// }
+	// clfn = (ngx_pool_cleanup_file_t *)cln->data; // 此处要特别注意，让clfn指针指向上面ngx_pool_cleanup_add函数内分配的存放ngx_pool_cleanup_file_t的空间。
+	// clfn->fd = fd;
+	// clfn->name = (u_char *)realfilename;
+	// clfn->log = r->pool->log;
+	// cln->handler = ngx_pool_cleanup_file;
 
 	// char *ip_addr = (char *)malloc(sizeof(char) * 4);
 	// char *ip_add2 = (char *)malloc(sizeof(char) * 4);
@@ -109,18 +120,18 @@ int log_info(ngx_stream_session_t *s, tran_t *info)
 	ip2str(info->sockaddr->dst_addr, ip_add2);
 	sprintf(temp, "[%s] %s:%d --> %s:%d", nowtime, ip_addr, info->sockaddr->src_port, ip_add2, info->sockaddr->dst_port);
 
-	write(clfn->fd, temp, strlen(temp));
+	write(fd, temp, strlen(temp));
 	if (info->protocol == TCP)
 	{
-		write(clfn->fd, " TCP", 4);
+		write(fd, " TCP", 4);
 	}
 	else if (info->protocol == UDP)
 	{
-		write(clfn->fd, " UDP", 4);
+		write(fd, " UDP", 4);
 	}
 	else
 	{
-		write(clfn->fd, " Unknow Protocal", 16);
+		write(fd, " Unknow Protocal", 16);
 	}
 	/* output the data */
 	/**
@@ -136,41 +147,41 @@ int log_info(ngx_stream_session_t *s, tran_t *info)
 	{
 		/* hex data */
 		sprintf(temp, "\n\t|");
-		write(clfn->fd, temp, 3);
+		write(fd, temp, 3);
 		for (uint16_t j = i; j < i + 16; j++)
 		{
 			if (j >= info->data_len)
 			{
-				write(clfn->fd, " 00", 3);
+				write(fd, " 00", 3);
 				continue;
 			}
 			sprintf(temp, " %02x", info->data[j]);
-			write(clfn->fd, temp, 3);
+			write(fd, temp, 3);
 		}
-		write(clfn->fd, " |", 2);
+		write(fd, " |", 2);
 		/* ascii data */
-		write(clfn->fd, "\t\t|", 3);
+		write(fd, "\t\t|", 3);
 		for (uint16_t j = i; j < i + 16; j++)
 		{
 			if (j >= info->data_len)
 			{
-				write(clfn->fd, " .", 2);
+				write(fd, " .", 2);
 				continue;
 			}
 			if (info->data[j] > 0x20 && info->data[j] < 0xff)
 			{
 				sprintf(temp, " %c", info->data[j]);
-				write(clfn->fd, temp, 2);
+				write(fd, temp, 2);
 			}
 			else
 			{
-				write(clfn->fd, " .", 2);
+				write(fd, " .", 2);
 			}
 		}
-		write(clfn->fd, " |", 2);
+		write(fd, " |", 2);
 	}
-	write(clfn->fd, "\n", 1);
-	ngx_close_file(clfn->fd);
+	write(fd, "\n", 1);
+	close(fd);
 }
 
 void get_data_from_nginx(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t from_upstream, tran_t *t)
@@ -226,8 +237,23 @@ void get_data_from_nginx(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t fr
 
 void test(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t from_upstream)
 {
+	module_srv_conf_t *ascf;
+	modules_switch *switch_info;
+	/* extern关键字可以链接已经编译好的ngx_stream_test_module */
+	extern ngx_module_t ngx_stream_test_module;
 	tran_t *t = new_tran_t(s->connection);
 	t->sockaddr = new_cs_info_t(s->connection);
 	get_data_from_nginx(s, in, from_upstream, t);
 	log_info(s, t);
+	/* get the modules srv conf */
+	ascf = (module_srv_conf_t *)ngx_stream_get_module_srv_conf(s,ngx_stream_test_module);
+	if (ascf == NULL) {
+		ngx_log_error(NGX_LOG_NOTICE, s->connection->log, 0,"Get modules srv conf error");
+		return;
+	}
+	/* get the module name an on_off value */
+	switch_info = (modules_switch *)ascf->rules->elts;
+	// for (int i = 0;i<ascf->rules->nelts;i++){
+	// 	/* do someting ...*/
+	// }
 }
