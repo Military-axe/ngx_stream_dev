@@ -1,5 +1,5 @@
 
-# ngx_stream_dumpdata_module
+# ngx_stream_interface
 
 此模块需要修改nginx源代码，在nginx_stream_write_filter函数中插入此模块的接口
 

@@ -39,18 +39,18 @@ typedef struct
 } ngx_stream_test_srv_conf_t;
 
 static char *
-ngx_stream_test_rule(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
+ngx_stream_interface_rule(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static ngx_int_t
 ngx_stream_test_init(ngx_conf_t *cf);
 static void *
 ngx_stream_test_create_srv_conf(ngx_conf_t *cf);
 
-static ngx_command_t ngx_stream_test_commands[] = {
+static ngx_command_t ngx_stream_interface_commands[] = {
 
     {
         ngx_string("modules"),
         NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE2,
-        ngx_stream_test_rule,
+        ngx_stream_interface_rule,
         NGX_STREAM_SRV_CONF_OFFSET,
         0,
         NULL,
@@ -60,7 +60,7 @@ static ngx_command_t ngx_stream_test_commands[] = {
 
 };
 
-static ngx_stream_module_t ngx_stream_test_module_ctx = {
+static ngx_stream_module_t ngx_stream_interface_module_ctx = {
     NULL,                 /* preconfiguration */
     ngx_stream_test_init, /* postconfiguration */
 
@@ -71,10 +71,10 @@ static ngx_stream_module_t ngx_stream_test_module_ctx = {
     NULL,                            /* merge server configuration */
 };
 
-ngx_module_t ngx_stream_test_module = {
+ngx_module_t ngx_stream_interface_module = {
     NGX_MODULE_V1,
-    &ngx_stream_test_module_ctx, /* module context */
-    ngx_stream_test_commands,    /* module directives */
+    &ngx_stream_interface_module_ctx, /* module context */
+    ngx_stream_interface_commands,    /* module directives */
     NGX_STREAM_MODULE,           /* module type */
     NULL,                        /* init master */
     NULL,                        /* init module */
@@ -95,7 +95,7 @@ static ngx_int_t ngx_stream_test_init(ngx_conf_t *cf)
     return NGX_OK;
 }
 
-static char *ngx_stream_test_rule(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+static char *ngx_stream_interface_rule(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
     ngx_stream_test_srv_conf_t *ascf = conf;
     ngx_uint_t on_off = 0;
