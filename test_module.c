@@ -1,18 +1,36 @@
 /*
  * @Author: 张大炮 mi1itray.axe@gmail.com
  * @Date: 2023-01-07 04:30:01
- * @LastEditors: 张大炮 mi1itray.axe@gmail.com
- * @LastEditTime: 2023-01-07 10:17:47
+ * @LastEditors: mi1itray.axe mi1itray.axe@gmail.com
+ * @LastEditTime: 2023-01-15 17:51:13
  * @Description: 测试使用的nginx stream module
  */
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_stream.h>
+#include <dlfcn.h>
+
+typedef struct
+{
+	uint32_t src_addr; /* 来源ip */
+	uint32_t dst_addr; /* 目的ip */
+	uint16_t src_port; /* 来源端口 */
+	uint16_t dst_port; /* 目的端口 */
+} cs_info_s;
+
+typedef struct
+{
+	cs_info_s *sockaddr; /* ip端口,4元组 */
+	uint8_t protocol;	 /* 协议: TCP/UDP */
+	uint8_t *data;		 /* 数据 */
+	uint16_t data_len;	 /* 数据长度 */
+} tran_s;
 
 typedef struct
 {
     char *name;
     ngx_uint_t on_off;
+    int (*module_interface)(tran_s *);
 } ngx_stream_test_on_off;
 
 typedef struct
@@ -30,7 +48,7 @@ ngx_stream_test_create_srv_conf(ngx_conf_t *cf);
 static ngx_command_t ngx_stream_test_commands[] = {
 
     {
-        ngx_string("test"),
+        ngx_string("modules"),
         NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE2,
         ngx_stream_test_rule,
         NGX_STREAM_SRV_CONF_OFFSET,
@@ -103,6 +121,17 @@ static char *ngx_stream_test_rule(ngx_conf_t *cf, ngx_command_t *cmd, void *conf
     rule->name = ngx_palloc(cf->pool, sizeof(ngx_str_t) * value[1].len);
     ngx_memcpy(rule->name, value[1].data, value[1].len);
     rule->on_off = on_off;
+
+    /* open customize module */
+    void* handle = dlopen("/root/Documents/nginx_stream_dev/customize_modules/test/libtest.so", RTLD_LAZY);
+    if (handle == 0) {
+        ngx_conf_log_error(NGX_LOG_ERR, cf, 0 ,"could not open the module error code: %s", dlerror());
+        return NGX_CONF_ERROR;
+    }
+    int (*temp)(tran_s* a);
+    temp = dlsym(handle, "test_modules_interface");
+    rule->module_interface = temp;
+    
     return NGX_CONF_OK;
 }
 
