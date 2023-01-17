@@ -31,7 +31,8 @@ typedef struct
 
 typedef struct
 {
-    int *argc_number;
+    int argc_number;
+    char *module_argv;
     int (*module_interface)(tran_s *);
 } ngx_stream_interface_on_off;
 
@@ -51,7 +52,7 @@ static ngx_command_t ngx_stream_interface_commands[] = {
 
     {
         ngx_string("modules"),
-        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE2,
+        NGX_STREAM_MAIN_CONF | NGX_STREAM_SRV_CONF | NGX_CONF_TAKE3,
         ngx_stream_interface_rule,
         NGX_STREAM_SRV_CONF_OFFSET,
         0,
@@ -63,14 +64,14 @@ static ngx_command_t ngx_stream_interface_commands[] = {
 };
 
 static ngx_stream_module_t ngx_stream_interface_module_ctx = {
-    NULL,                 /* preconfiguration */
-    ngx_stream_interface_init, /* postconfiguration */
+    NULL,                                 /* preconfiguration */
+    ngx_stream_interface_init,            /* postconfiguration */
 
-    NULL, /* create main configuration */
-    NULL, /* init main configuration */
+    NULL,                                 /* create main configuration */
+    NULL,                                 /* init main configuration */
 
     ngx_stream_interface_create_srv_conf, /* create server configuration */
-    NULL,                            /* merge server configuration */
+    NULL,                                 /* merge server configuration */
 };
 
 ngx_module_t ngx_stream_interface_module = {
@@ -104,7 +105,10 @@ static char *ngx_stream_interface_rule(ngx_conf_t *cf, ngx_command_t *cmd, void 
     ngx_stream_interface_on_off *rule;
 
     value = cf->args->elts;
-    if (value[2].len == 3 && ngx_strcmp(value[2].data, "off") == 0)
+    /**
+     * 模块格式 modules [接口名] [so文件路径] [on/off] [模块参数]
+     */
+    if (value[3].len == 3 && ngx_strcmp(value[3].data, "off") == 0)
     {
         return NGX_CONF_OK;
     }
@@ -119,18 +123,21 @@ static char *ngx_stream_interface_rule(ngx_conf_t *cf, ngx_command_t *cmd, void 
                            "ngx_array_push error");
         return NGX_CONF_ERROR;
     }
-    rule->name = ngx_palloc(cf->pool, sizeof(ngx_str_t) * value[1].len);
-    ngx_memcpy(rule->name, value[1].data, value[1].len);
-    rule->on_off = on_off;
-
+    rule->argc_number = cf->args->nelts - 1;
+    /* copy the modules argument */
+    if (rule->argc_number > 4) {
+        rule->module_argv = ngx_palloc( cf->pool, sizeof(char) * (value[4].len+1));
+        memcpy(rule->module_argv, value[4].data, value[4].len);
+        rule->module_argv[value[4].len] = "\x00";
+    }
     /* open customize module */
-    void* handle = dlopen("/root/Documents/nginx_stream_dev/customize_modules/test/libtest.so", RTLD_LAZY);
+    void* handle = dlopen(value[2].data, RTLD_LAZY);
     if (handle == 0) {
         ngx_conf_log_error(NGX_LOG_ERR, cf, 0 ,"could not open the module error code: %s", dlerror());
         return NGX_CONF_ERROR;
     }
     int (*temp)(tran_s* a);
-    temp = dlsym(handle, "test_modules_interface");
+    temp = dlsym(handle, value[1].data);
     rule->module_interface = temp;
     
     return NGX_CONF_OK;
