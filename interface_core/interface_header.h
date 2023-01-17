@@ -18,7 +18,8 @@ typedef struct transport_struct
 
 typedef struct
 {
-	char *name;
-	uint8_t on_off;
-	int (*module_interface)(tran_t *);
+    char *interface_name;
+    char *module_argv;
+    int argc_number;
+    int (*module_interface)(tran_t *);
 } modules_switch;

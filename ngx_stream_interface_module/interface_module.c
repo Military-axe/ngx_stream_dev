@@ -31,8 +31,9 @@ typedef struct
 
 typedef struct
 {
-    int argc_number;
+    char *interface_name;
     char *module_argv;
+    int argc_number;
     int (*module_interface)(tran_s *);
 } ngx_stream_interface_on_off;
 
@@ -126,6 +127,9 @@ static char *ngx_stream_interface_rule(ngx_conf_t *cf, ngx_command_t *cmd, void 
         return NGX_CONF_ERROR;
     }
     rule->argc_number = cf->args->nelts - 1;
+    rule->interface_name = ngx_palloc( cf->pool, sizeof(char) * (value[2].len+1));
+    memcpy(rule->interface_name, value[1].data, value[1].len);
+    rule->interface_name[value[1].len] = "\x00";
     /* copy the modules argument */
     if (rule->argc_number > 4) {
         rule->module_argv = ngx_palloc( cf->pool, sizeof(char) * (value[4].len+1));
