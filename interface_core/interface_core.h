@@ -14,7 +14,8 @@
 #include <ngx_core.h>
 #include <ngx_stream.h>
 #include "interface_header.h"
-
+#define TCP 0x01
+#define UDP 0x02
 #define ON 0x01
 #define OFF 0x00
 
@@ -111,11 +112,9 @@ void interface_core(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t from_up
 	/* test to run the customize module */
 	for (int i = 0; i < ascf->rules->nelts; i++)
 	{
-		if (strcmp(switch_info[i].name, "log") == 0 && switch_info->on_off == ON)
-		{
-			ngx_log_debug0(NGX_LOG_DEBUG, s->connection->log, 0, "Use log_module_interface");
+		if (switch_info->module_interface != NULL) {
 			ret_code = switch_info->module_interface(t);
-			ngx_log_debug1(NGX_LOG_DEBUG, s->connection->log, 0, "log_module_interface return code %d", ret_code);
+			ngx_log_debug2(NGX_LOG_DEBUG, s->connection->log, 0, "%s return code %d", switch_info->interface_name, ret_code);
 		}
 	}
 }
