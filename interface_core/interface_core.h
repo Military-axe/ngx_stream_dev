@@ -4,9 +4,9 @@
  * @brief 接口文件核心部分
  * @version 0.1
  * @date 2023-01-16
- * 
+ *
  * @copyright Copyright (c) 2023 mi1itray.axe
- * 
+ *
  */
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,7 +25,7 @@ typedef struct
 } module_srv_conf_t;
 
 #define new_cs_info_t(r) (cs_info_t *)ngx_palloc(r->pool, sizeof(cs_info_t)) /// 生成一个cs_info_t结构体内存
-#define new_tran_t(r) (tran_t *)ngx_palloc(r->pool, sizeof(tran_t))          /// 生成一个tran_t结构体内存
+#define new_tran_t(r) (tran_t *)ngx_palloc(r->pool, sizeof(tran_t))			 /// 生成一个tran_t结构体内存
 
 /**
  * @brief 从nginx中的结构体ngx_stream_session_t和ngx_chain_t中读取需要的数据
@@ -83,7 +83,7 @@ static void get_data_from_nginx(ngx_stream_session_t *s, ngx_chain_t *in, ngx_ui
  * @brief 接口核心函数，
  * 获取nginx运行中的数据
  * 获取配置中的参数，在一个循环体中循环遍历哪一个模块接口函数被调用
- * 
+ *
  * @param s ngx_stream_session_t*
  * @param in ngx_chain_t *
  * @param from_upstream ngx_uint_t
@@ -99,7 +99,7 @@ void interface_core(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t from_up
 	tran_t *t = new_tran_t(s->connection);
 	t->sockaddr = new_cs_info_t(s->connection);
 	get_data_from_nginx(s, in, from_upstream, t);
-	
+
 	/* get the modules srv conf */
 	ascf = (module_srv_conf_t *)ngx_stream_get_module_srv_conf(s, ngx_stream_interface_module);
 	if (ascf == NULL)
@@ -112,7 +112,8 @@ void interface_core(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t from_up
 	/* test to run the customize module */
 	for (int i = 0; i < ascf->rules->nelts; i++)
 	{
-		if (switch_info->module_interface != NULL) {
+		if (switch_info->module_interface != NULL)
+		{
 			ret_code = switch_info->module_interface(t);
 			ngx_log_debug2(NGX_LOG_DEBUG, s->connection->log, 0, "%s return code %d", switch_info->interface_name, ret_code);
 		}

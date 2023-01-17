@@ -4,9 +4,9 @@
  * @brief nginx stream的模块，用于收集nginx.conf配置信息
  * @version 0.1
  * @date 2023-01-16
- * 
+ *
  * @copyright Copyright (c) 2023 mi1itray.axe
- * 
+ *
  */
 #include <ngx_config.h>
 #include <ngx_core.h>
@@ -15,18 +15,18 @@
 
 typedef struct
 {
-	uint32_t src_addr; /* 来源ip */
-	uint32_t dst_addr; /* 目的ip */
-	uint16_t src_port; /* 来源端口 */
-	uint16_t dst_port; /* 目的端口 */
+    uint32_t src_addr; /* 来源ip */
+    uint32_t dst_addr; /* 目的ip */
+    uint16_t src_port; /* 来源端口 */
+    uint16_t dst_port; /* 目的端口 */
 } cs_info_s;
 
 typedef struct
 {
-	cs_info_s *sockaddr; /* ip端口,4元组 */
-	uint8_t protocol;	 /* 协议: TCP/UDP */
-	uint8_t *data;		 /* 数据 */
-	uint16_t data_len;	 /* 数据长度 */
+    cs_info_s *sockaddr; /* ip端口,4元组 */
+    uint8_t protocol;    /* 协议: TCP/UDP */
+    uint8_t *data;       /* 数据 */
+    uint16_t data_len;   /* 数据长度 */
 } tran_s;
 
 typedef struct
@@ -67,11 +67,11 @@ static ngx_command_t ngx_stream_interface_commands[] = {
 };
 
 static ngx_stream_module_t ngx_stream_interface_module_ctx = {
-    NULL,                                 /* preconfiguration */
-    ngx_stream_interface_init,            /* postconfiguration */
+    NULL,                      /* preconfiguration */
+    ngx_stream_interface_init, /* postconfiguration */
 
-    NULL,                                 /* create main configuration */
-    NULL,                                 /* init main configuration */
+    NULL, /* create main configuration */
+    NULL, /* init main configuration */
 
     ngx_stream_interface_create_srv_conf, /* create server configuration */
     ngx_stream_interface_merge_srv_conf,  /* merge server configuration */
@@ -127,25 +127,27 @@ static char *ngx_stream_interface_rule(ngx_conf_t *cf, ngx_command_t *cmd, void 
         return NGX_CONF_ERROR;
     }
     rule->argc_number = cf->args->nelts - 1;
-    rule->interface_name = ngx_palloc( cf->pool, sizeof(char) * (value[2].len+1));
+    rule->interface_name = ngx_palloc(cf->pool, sizeof(char) * (value[2].len + 1));
     memcpy(rule->interface_name, value[1].data, value[1].len);
     rule->interface_name[value[1].len] = "\x00";
     /* copy the modules argument */
-    if (rule->argc_number > 4) {
-        rule->module_argv = ngx_palloc( cf->pool, sizeof(char) * (value[4].len+1));
+    if (rule->argc_number > 4)
+    {
+        rule->module_argv = ngx_palloc(cf->pool, sizeof(char) * (value[4].len + 1));
         memcpy(rule->module_argv, value[4].data, value[4].len);
         rule->module_argv[value[4].len] = "\x00";
     }
     /* open customize module */
-    void* handle = dlopen(value[2].data, RTLD_LAZY);
-    if (handle == 0) {
-        ngx_conf_log_error(NGX_LOG_ERR, cf, 0 ,"could not open the module error code: %s", dlerror());
+    void *handle = dlopen(value[2].data, RTLD_LAZY);
+    if (handle == 0)
+    {
+        ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "could not open the module error code: %s", dlerror());
         return NGX_CONF_ERROR;
     }
-    int (*temp)(tran_s* a);
+    int (*temp)(tran_s * a);
     temp = dlsym(handle, value[1].data);
     rule->module_interface = temp;
-    
+
     return NGX_CONF_OK;
 }
 
@@ -168,7 +170,8 @@ ngx_stream_interface_merge_srv_conf(ngx_conf_t *cf, void *parent, void *child)
 {
     ngx_stream_interface_srv_conf_t *prev = parent;
     ngx_stream_interface_srv_conf_t *conf = child;
-    if (conf->rules == NULL) {
+    if (conf->rules == NULL)
+    {
         conf->rules = prev->rules;
     }
 
