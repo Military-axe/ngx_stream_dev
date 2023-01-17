@@ -47,6 +47,8 @@ static ngx_int_t
 ngx_stream_interface_init(ngx_conf_t *cf);
 static void *
 ngx_stream_interface_create_srv_conf(ngx_conf_t *cf);
+static char *
+ngx_stream_interface_merge_srv_conf(ngx_conf_t *cf, void *parent, void *child);
 
 static ngx_command_t ngx_stream_interface_commands[] = {
 
@@ -71,7 +73,7 @@ static ngx_stream_module_t ngx_stream_interface_module_ctx = {
     NULL,                                 /* init main configuration */
 
     ngx_stream_interface_create_srv_conf, /* create server configuration */
-    NULL,                                 /* merge server configuration */
+    ngx_stream_interface_merge_srv_conf,  /* merge server configuration */
 };
 
 ngx_module_t ngx_stream_interface_module = {
@@ -155,4 +157,16 @@ static void *ngx_stream_interface_create_srv_conf(ngx_conf_t *cf)
     }
 
     return conf;
+}
+
+static char *
+ngx_stream_interface_merge_srv_conf(ngx_conf_t *cf, void *parent, void *child)
+{
+    ngx_stream_interface_srv_conf_t *prev = parent;
+    ngx_stream_interface_srv_conf_t *conf = child;
+    if (conf->rules == NULL) {
+        conf->rules = prev->rules;
+    }
+
+    return NGX_CONF_OK;
 }
