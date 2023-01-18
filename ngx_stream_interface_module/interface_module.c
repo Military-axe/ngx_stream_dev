@@ -115,7 +115,14 @@ static char *ngx_stream_interface_rule(ngx_conf_t *cf, ngx_command_t *cmd, void 
     memcpy(rule->interface_name, value[1].data, value[1].len);
     rule->interface_name[value[1].len] = 0;
     /* copy the modules argument */
-    rule->argv->elts = value + 4;
+    // rule->argv->elts = value + 4;
+    rule->argv->elts = ngx_palloc(cf->pool, sizeof(str_t) * rule->argv->argv_number);
+    for (int i = 0; i < rule->argv->argv_number; i++){
+        rule->argv->elts[i].len = value[4].len;
+        /* copy the data */
+        rule->argv->elts[i].data = ngx_palloc(cf->pool, sizeof(char) * (value[4].len + 1));
+        memcpy(rule->argv->elts[i].data, value[4].data, value[4].len);
+    }
     /* open customize module */
     void *handle = dlopen(value[2].data, RTLD_LAZY);
     if (handle == 0)
