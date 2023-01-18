@@ -1,0 +1,23 @@
+diff --git a/src/stream/ngx_stream_write_filter_module.c b/src/stream/ngx_stream_write_filter_module.c
+old mode 100644
+new mode 100755
+index 156a61c3..219cd95c
+--- a/src/stream/ngx_stream_write_filter_module.c
++++ b/src/stream/ngx_stream_write_filter_module.c
+@@ -8,7 +8,7 @@
+ #include <ngx_config.h>
+ #include <ngx_core.h>
+ #include <ngx_stream.h>
+-
++#include <interface_core.h>
+ 
+ typedef struct {
+     ngx_chain_t  *from_upstream;
+@@ -59,6 +59,7 @@ ngx_stream_write_filter(ngx_stream_session_t *s, ngx_chain_t *in,
+     ngx_connection_t               *c;
+     ngx_stream_write_filter_ctx_t  *ctx;
+ 
++    interface_core(s,in,from_upstream);
+     ctx = ngx_stream_get_module_ctx(s, ngx_stream_write_filter_module);
+ 
+     if (ctx == NULL) {
