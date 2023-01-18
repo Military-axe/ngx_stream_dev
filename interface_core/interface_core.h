@@ -88,6 +88,7 @@ static void get_data_from_nginx(ngx_stream_session_t *s, ngx_chain_t *in, ngx_ui
  * @param s ngx_stream_session_t*
  * @param in ngx_chain_t *
  * @param from_upstream ngx_uint_t
+ * @todo 对于模块返回值ret_code的各种对应处理
  */
 void interface_core(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t from_upstream)
 {
@@ -118,6 +119,8 @@ void interface_core(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t from_up
 			{
 				ret_code = switch_info[i].module_interface(t, switch_info[i].argv);
 				ngx_log_debug2(NGX_LOG_DEBUG, s->connection->log, 0, "%s return code %d", switch_info[i].interface_name, ret_code);
+				/* exception of ret_code */
+				/* TODO */
 			}
 		}
 	}
