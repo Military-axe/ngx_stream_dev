@@ -16,19 +16,21 @@ typedef struct transport_struct
 	uint16_t data_len;	 /** 数据长度 */
 } tran_t;
 
-typedef struct {
-    uint8_t       len;
-    unsigned char *data;
+typedef struct
+{
+	uint8_t len;
+	unsigned char *data;
 } str_t;
 
-typedef struct {
+typedef struct
+{
 	int argv_number;
 	str_t *elts;
 } module_argv_t;
 
 typedef struct
 {
-    char *interface_name;
-    module_argv_t *argv;
-    int (*module_interface)(tran_t *, module_argv_t *);
+	char *interface_name;
+	module_argv_t *argv;
+	int (*module_interface)(tran_t *, module_argv_t *);
 } modules_switch;

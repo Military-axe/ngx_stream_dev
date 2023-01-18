@@ -29,10 +29,11 @@ typedef struct
 
 /**
  * @brief 从nginx中的结构体ngx_stream_session_t和ngx_chain_t中读取需要的数据
- *          存储到tran_t* 和cs_info_t* 指针中。需要的数据有ip端口协议5元组
- * 		    (来源ip,来源端口,目的ip,目的端口,协议类型)，还要读取传输数据与数据长度。
- * 			来源ip端口从 s->connection->sockaddr提取
- * 			目标ip端口从 s->connection->local_sockaddr提取
+ * 存储到tran_t* 和cs_info_t* 指针中。\n
+ * 需要的数据有ip端口协议5元组\n
+ * (来源ip,来源端口,目的ip,目的端口,协议类型)，还要读取传输数据与数据长度。
+ * 来源ip端口从 s->connection->sockaddr提取\n
+ * 目标ip端口从 s->connection->local_sockaddr提取
  *
  * @param s 是nginx stream session结构体指针，数据从这里取
  * @param in 每次交互存储的数据
@@ -81,8 +82,8 @@ static void get_data_from_nginx(ngx_stream_session_t *s, ngx_chain_t *in, ngx_ui
 
 /**
  * @brief 接口核心函数，
- * 获取nginx运行中的数据
- * 获取配置中的参数，在一个循环体中循环遍历哪一个模块接口函数被调用
+ * 获取nginx运行中的数据\n
+ * 获取配置中的参数，在一个循环体中循环遍历哪一个模块接口函数被调用\n
  *
  * @param s ngx_stream_session_t*
  * @param in ngx_chain_t *
@@ -105,17 +106,19 @@ void interface_core(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t from_up
 	if (ascf == NULL)
 	{
 		ngx_log_error(NGX_LOG_NOTICE, s->connection->log, 0, "Get modules srv conf error");
-		return;
 	}
-	/* get the module name an on_off value */
-	switch_info = (modules_switch *)ascf->rules->elts;
-	/* test to run the customize module */
-	for (int i = 0; i < ascf->rules->nelts; i++)
+	else
 	{
-		if (switch_info->module_interface != NULL)
+		/* get the module name an on_off value */
+		switch_info = (modules_switch *)ascf->rules->elts;
+		/* test to run the customize module */
+		for (int i = 0; i < ascf->rules->nelts; i++)
 		{
-			ret_code = switch_info->module_interface(t);
-			ngx_log_debug2(NGX_LOG_DEBUG, s->connection->log, 0, "%s return code %d", switch_info->interface_name, ret_code);
+			if (switch_info[i].module_interface != NULL)
+			{
+				ret_code = switch_info[i].module_interface(t, switch_info[i].argv);
+				ngx_log_debug2(NGX_LOG_DEBUG, s->connection->log, 0, "%s return code %d", switch_info[i].interface_name, ret_code);
+			}
 		}
 	}
 }
