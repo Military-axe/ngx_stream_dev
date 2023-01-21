@@ -1,4 +1,8 @@
 #include <stdint.h>
+#define MODULE_FILE_ERR       0x00 /// 模块文件操作失败
+#define MODULE_OK             0x01 /// 模块执行成功
+#define MODULE_ERR            0x02 /// 模块执行失败
+#define MODULE_EXCEPTION_END  0x03 /// 模块异常退出
 
 typedef struct client_server_info_struct
 {

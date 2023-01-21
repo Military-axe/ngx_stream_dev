@@ -1,4 +1,8 @@
 #include <stdint.h>
+#define MODULE_FILE_ERR       0x00 /// 模块文件操作失败
+#define MODULE_OK             0x01 /// 模块执行成功
+#define MODULE_ERR            0x02 /// 模块执行失败
+#define MODULE_EXCEPTION_END  0x03 /// 模块异常退出
 
 typedef struct client_server_info_struct
 {
@@ -16,21 +20,19 @@ typedef struct transport_struct
 	uint16_t data_len;	 /** 数据长度 */
 } tran_t;
 
-typedef struct
-{
-	uint8_t len;
-	unsigned char *data;
+typedef struct {
+    uint8_t       len;
+    unsigned char *data;
 } str_t;
 
-typedef struct
-{
+typedef struct {
 	int argv_number;
 	str_t *elts;
 } module_argv_t;
 
 typedef struct
 {
-	char *interface_name;
-	module_argv_t *argv;
-	int (*module_interface)(tran_t *, module_argv_t *);
+    char *interface_name;
+    module_argv_t *argv;
+    int (*module_interface)(tran_t *, module_argv_t *);
 } modules_switch;
