@@ -1,13 +1,12 @@
-/**
- * @file interface_module.c
- * @author mi1itray.axe (mi1itray.axe@gmail.com)
- * @brief nginx stream的模块，用于收集nginx.conf配置信息
- * @version 0.1
- * @date 2023-01-16
- *
- * @copyright Copyright (c) 2023 mi1itray.axe
- *
- */
+///@file interface_module.c
+///@author mi1itray.axe (mi1itray.axe@gmail.com)
+///@brief nginx stream的模块，用于收集nginx.conf配置信息
+///@version 0.1
+///@date 2023-01-16
+///
+///@copyright Copyright (c) 2023 mi1itray.axe
+///
+///
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_stream.h>
@@ -84,7 +83,8 @@ static ngx_int_t ngx_stream_interface_init(ngx_conf_t *cf)
 /// @param cmd 自定义的配置命令，这里是modules
 /// @param conf 已经解析过的配置信息
 /// @return 返回配置是否成功
-static char *ngx_stream_interface_rule(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+static char *
+ngx_stream_interface_rule(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
     ngx_stream_interface_srv_conf_t *ascf = conf;
     ngx_str_t *value;
@@ -137,7 +137,8 @@ static char *ngx_stream_interface_rule(ngx_conf_t *cf, ngx_command_t *cmd, void 
     return NGX_CONF_OK;
 }
 
-static void *ngx_stream_interface_create_srv_conf(ngx_conf_t *cf)
+static void *
+ngx_stream_interface_create_srv_conf(ngx_conf_t *cf)
 {
     ngx_stream_interface_srv_conf_t *conf;
 

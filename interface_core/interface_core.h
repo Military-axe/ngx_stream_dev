@@ -1,13 +1,12 @@
-/**
- * @file interface_core.h
- * @author mi1itray.axe (mi1itray.axe@gmail.com)
- * @brief 接口文件核心部分
- * @version 0.1
- * @date 2023-01-16
- *
- * @copyright Copyright (c) 2023 mi1itray.axe
- *
- */
+///@file interface_core.h
+///@author mi1itray.axe (mi1itray.axe@gmail.com)
+///@brief 接口文件核心部分
+///@version 0.1
+///@date 2023-01-16
+///
+///@copyright Copyright (c) 2023 mi1itray.axe
+///
+///
 #include <stdlib.h>
 #include <stdio.h>
 #include <ngx_config.h>
@@ -27,19 +26,18 @@ typedef struct
 #define new_cs_info_t(r) (cs_info_t *)ngx_palloc(r->pool, sizeof(cs_info_t)) /// 生成一个cs_info_t结构体内存
 #define new_tran_t(r) (tran_t *)ngx_palloc(r->pool, sizeof(tran_t))			 /// 生成一个tran_t结构体内存
 
-/**
- * @brief 从nginx中的结构体ngx_stream_session_t和ngx_chain_t中读取需要的数据
- * 存储到tran_t* 和cs_info_t* 指针中。\n
- * 需要的数据有ip端口协议5元组\n
- * (来源ip,来源端口,目的ip,目的端口,协议类型)，还要读取传输数据与数据长度。
- * 来源ip端口从 s->connection->sockaddr提取\n
- * 目标ip端口从 s->connection->local_sockaddr提取
- *
- * @param s 是nginx stream session结构体指针，数据从这里取
- * @param in 每次交互存储的数据
- * @param from_upstream 用于判断数据是upstream来的还是downstream来的
- * @param t 自定义结构体用于存储信息
- */
+
+///@brief 从nginx中的结构体ngx_stream_session_t和ngx_chain_t中读取需要的数据
+///存储到tran_t* 和cs_info_t* 指针中。\n
+///需要的数据有ip端口协议5元组\n
+///(来源ip,来源端口,目的ip,目的端口,协议类型)，还要读取传输数据与数据长度。
+///来源ip端口从 s->connection->sockaddr提取\n
+///目标ip端口从 s->connection->local_sockaddr提取
+///
+///@param s 是nginx stream session结构体指针，数据从这里取
+///@param in 每次交互存储的数据
+///@param from_upstream 用于判断数据是upstream来的还是downstream来的
+///@param t 自定义结构体用于存储信息
 static void get_data_from_nginx(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t from_upstream, tran_t *t)
 {
 
@@ -80,16 +78,15 @@ static void get_data_from_nginx(ngx_stream_session_t *s, ngx_chain_t *in, ngx_ui
 	}
 }
 
-/**
- * @brief 接口核心函数，
- * 获取nginx运行中的数据\n
- * 获取配置中的参数，在一个循环体中循环遍历哪一个模块接口函数被调用\n
- *
- * @param s ngx_stream_session_t*
- * @param in ngx_chain_t *
- * @param from_upstream ngx_uint_t
- * @todo 对于模块返回值ret_code的各种对应处理
- */
+
+///@brief 接口核心函数，
+///获取nginx运行中的数据\n
+///获取配置中的参数，在一个循环体中循环遍历哪一个模块接口函数被调用\n
+///
+///@param s ngx_stream_session_t*
+///@param in ngx_chain_t *
+///@param from_upstream ngx_uint_t
+///@todo 对于模块返回值ret_code的各种对应处理
 void interface_core(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t from_upstream)
 {
 	module_srv_conf_t *ascf;
