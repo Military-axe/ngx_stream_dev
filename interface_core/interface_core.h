@@ -118,6 +118,21 @@ void interface_core(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t from_up
 				ngx_log_debug2(NGX_LOG_DEBUG, s->connection->log, 0, "%s return code %d", switch_info[i].interface_name, ret_code);
 				/* exception of ret_code */
 				/* TODO */
+				/* 处理需要细化,考虑数据可能损坏，需不需要复制一下数据 */
+				switch (ret_code) {
+					case MODULE_FILE_ERR:
+						ngx_log_error(NGX_LOG_ERR, s->connection->log, 0, "Module: %s; module file manipulation error", switch_info[i].interface_name);
+						break;
+					case MODULE_OK:
+						ngx_log_error(NGX_LOG_NOTICE, s->connection->log, 0, "Module: %s; module complete", switch_info[i].interface_name);
+						break;
+					case MODULE_ERR:
+						ngx_log_error(NGX_LOG_ERR, s->connection->log, 0, "Module: %s; module run error", switch_info[i].interface_name);
+						break;
+					case MODULE_EXCEPTION_END:
+						ngx_log_error(NGX_LOG_ERR, s->connection->log, 0, "Module: %s; module run exception to end", switch_info[i].interface_name);
+						break;
+				}
 			}
 		}
 	}
