@@ -93,13 +93,11 @@ void interface_core(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t from_up
 	modules_switch *switch_info;
 	int ret_code;
 
-	/* extern关键字可以链接已经编译好的ngx_stream_interface_module */
 	extern ngx_module_t ngx_stream_interface_module;
 	tran_t *t = new_tran_t(s->connection);
 	t->sockaddr = new_cs_info_t(s->connection);
 	get_data_from_nginx(s, in, from_upstream, t);
 
-	/* get the modules srv conf */
 	ascf = (module_srv_conf_t *)ngx_stream_get_module_srv_conf(s, ngx_stream_interface_module);
 	if (ascf == NULL)
 	{
