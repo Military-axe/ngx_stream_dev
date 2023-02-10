@@ -13,6 +13,8 @@
 #include <dlfcn.h>
 #include "interface_header.h"
 
+#define MODULES_MAX 5 /* modules{} 里需要配置的参数的 */
+
 typedef struct
 {
     ngx_array_t *rules;
@@ -85,23 +87,29 @@ static ngx_int_t ngx_stream_interface_init(ngx_conf_t *cf)
 /// @return 返回配置是否成功
 static char *
 ngx_stream_interface_rule(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
-{
-    ngx_stream_interface_srv_conf_t *ascf = conf;
+{ 
     ngx_str_t *value;
     modules_switch *rule;
+    int (*temp)(tran_t * a);
+    ngx_stream_interface_srv_conf_t *ascf;
 
+    ascf = conf;
     value = cf->args->elts;
+
     /**
      * 模块格式 modules [接口名] [so文件路径] [on/off] [模块参数]
      */
+    
     if (value[3].len == 3 && ngx_strcmp(value[3].data, "off") == 0)
     {
         return NGX_CONF_OK;
     }
+
     if (ascf->rules == NULL)
     {
         ascf->rules = ngx_array_create(cf->pool, 2, sizeof(modules_switch));
     }
+
     rule = ngx_array_push(ascf->rules);
     if (rule == NULL)
     {
@@ -109,29 +117,41 @@ ngx_stream_interface_rule(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
                            "ngx_array_push error");
         return NGX_CONF_ERROR;
     }
+
     rule->argv = ngx_palloc(cf->pool, sizeof(module_argv_t));
     rule->argv->argv_number = cf->args->nelts - 4;
     rule->interface_name = ngx_palloc(cf->pool, sizeof(char) * (value[2].len + 1));
     memcpy(rule->interface_name, value[1].data, value[1].len);
     rule->interface_name[value[1].len] = 0;
+
     /* copy the modules argument */
-    // rule->argv->elts = value + 4;
+
     rule->argv->elts = ngx_palloc(cf->pool, sizeof(str_t) * rule->argv->argv_number);
-    for (int i = 0; i < rule->argv->argv_number; i++){
+    for (int i = 0; i < rule->argv->argv_number; i++)
+    {
         rule->argv->elts[i].len = value[4].len;
+
         /* copy the data */
+
         rule->argv->elts[i].data = ngx_palloc(cf->pool, sizeof(char) * (value[4].len + 1));
         memcpy(rule->argv->elts[i].data, value[4].data, value[4].len);
     }
+
     /* open customize module */
+    
     void *handle = dlopen(value[2].data, RTLD_LAZY);
     if (handle == 0)
     {
         ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "could not open the module error code: %s", dlerror());
         return NGX_CONF_ERROR;
     }
-    int (*temp)(tran_t * a);
+
     temp = dlsym(handle, value[1].data);
+    if (temp == 0)
+    {
+        ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "Could not find the interface name: %s in library: %s", value[1].data, value[2].data);
+        return NGX_CONF_ERROR;
+    }
     rule->module_interface = temp;
 
     return NGX_CONF_OK;
@@ -157,6 +177,7 @@ ngx_stream_interface_merge_srv_conf(ngx_conf_t *cf, void *parent, void *child)
 {
     ngx_stream_interface_srv_conf_t *prev = parent;
     ngx_stream_interface_srv_conf_t *conf = child;
+
     if (conf->rules == NULL)
     {
         conf->rules = prev->rules;
