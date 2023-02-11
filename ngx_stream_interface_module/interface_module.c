@@ -75,7 +75,7 @@ static ngx_int_t ngx_stream_interface_init(ngx_conf_t *cf)
     ngx_stream_handler_pt *h;
     ngx_stream_core_main_conf_t *cmcf;
 
-    cmcf = (ngx_stream_core_main_conf_t *)ngx_stream_conf_get_module_main_conf(cf, ngx_stream_core_module);
+    cmcf = ngx_stream_conf_get_module_main_conf(cf, ngx_stream_core_module);
 
     return NGX_OK;
 }
@@ -118,9 +118,9 @@ ngx_stream_interface_rule(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         return NGX_CONF_ERROR;
     }
 
-    rule->argv = ngx_palloc(cf->pool, sizeof(module_argv_t));
+    rule->argv = ngx_pcalloc(cf->pool, sizeof(module_argv_t));
     rule->argv->argv_number = cf->args->nelts - 4;
-    rule->interface_name = ngx_palloc(cf->pool, sizeof(char) * (value[2].len + 1));
+    rule->interface_name = ngx_pcalloc(cf->pool, sizeof(char) * (value[2].len + 1));
     memcpy(rule->interface_name, value[1].data, value[1].len);
     rule->interface_name[value[1].len] = 0;
 
@@ -162,7 +162,7 @@ ngx_stream_interface_create_srv_conf(ngx_conf_t *cf)
 {
     ngx_stream_interface_srv_conf_t *conf;
 
-    conf = (ngx_stream_interface_srv_conf_t *)ngx_pcalloc(cf->pool, sizeof(ngx_stream_interface_srv_conf_t));
+    conf = ngx_pcalloc(cf->pool, sizeof(ngx_stream_interface_srv_conf_t));
     if (conf == NULL)
     {
         ngx_conf_log_error(NGX_LOG_DEBUG, cf, 0, "ngx_stream_interface_create_srv_conf error");

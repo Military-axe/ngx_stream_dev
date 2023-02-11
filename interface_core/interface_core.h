@@ -98,16 +98,19 @@ void interface_core(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t from_up
 	t->sockaddr = new_cs_info_t(s->connection);
 	get_data_from_nginx(s, in, from_upstream, t);
 
-	ascf = (module_srv_conf_t *)ngx_stream_get_module_srv_conf(s, ngx_stream_interface_module);
+	ascf = (module_srv_conf_t* )ngx_stream_get_module_srv_conf(s, ngx_stream_interface_module);
 	if (ascf == NULL)
 	{
 		ngx_log_error(NGX_LOG_NOTICE, s->connection->log, 0, "Get modules srv conf error");
 	}
 	else
 	{
-		/* get the module name an on_off value */
-		switch_info = (modules_switch *)ascf->rules->elts;
-		/* test to run the customize module */
+		/* get the module arguments */
+		
+		switch_info = (modules_switch* )ascf->rules->elts;
+		
+		/* run the customize module */
+		
 		for (int i = 0; i < ascf->rules->nelts; i++)
 		{
 			if (switch_info[i].module_interface != NULL)
@@ -133,5 +136,9 @@ void interface_core(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t from_up
 				}
 			}
 		}
+
+		ngx_pfree(s->connection->pool, t->sockaddr);
+		ngx_pfree(s->connection->pool, t);
+
 	}
 }
