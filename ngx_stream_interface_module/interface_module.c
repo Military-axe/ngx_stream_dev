@@ -13,8 +13,6 @@
 #include <dlfcn.h>
 #include "interface_header.h"
 
-#define MODULES_MAX 5 /* modules{} 里需要配置的参数的 */
-
 typedef struct
 {
     ngx_array_t *rules;
