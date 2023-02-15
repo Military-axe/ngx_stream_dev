@@ -44,10 +44,15 @@ static void get_data_from_nginx(ngx_stream_session_t *s, ngx_chain_t *in, ngx_ui
 	cs_info_t *c = t->sockaddr;
 
 	/* copy data */
+
 	t->data = in->buf->pos;
+	
 	/* calculation data length */
+	
 	t->data_len = in->buf->last - in->buf->pos;
+	
 	/* Judge the protocol TCP/UDP */
+	
 	if (s->connection->udp)
 	{
 		t->protocol = UDP;
@@ -56,8 +61,10 @@ static void get_data_from_nginx(ngx_stream_session_t *s, ngx_chain_t *in, ngx_ui
 	{
 		t->protocol = TCP;
 	}
+	
 	/* copy src ip:port and dst ip:port */
 	/* 根据ngx_stream_write_filter中的参数from_upstream来判断此时谁是来源谁是目的 */
+	
 	if (from_upstream)
 	{
 		memcpy(&c->src_addr, (char *)(s->connection->local_sockaddr) + 4, 4);
@@ -125,7 +132,7 @@ void interface_core(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t from_up
 						ngx_log_error(NGX_LOG_ERR, s->connection->log, 0, "Module: %s; module file manipulation error", switch_info[i].interface_name);
 						break;
 					case MODULE_OK:
-						ngx_log_error(NGX_LOG_NOTICE, s->connection->log, 0, "Module: %s; module complete", switch_info[i].interface_name);
+						ngx_log_error(NGX_LOG_DEBUG, s->connection->log, 0, "Module: %s; module complete", switch_info[i].interface_name);
 						break;
 					case MODULE_ERR:
 						ngx_log_error(NGX_LOG_ERR, s->connection->log, 0, "Module: %s; module run error", switch_info[i].interface_name);
