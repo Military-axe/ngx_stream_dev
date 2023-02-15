@@ -88,7 +88,7 @@ ngx_stream_interface_rule(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 { 
     ngx_str_t *value;
     modules_switch *rule;
-    int (*temp)(tran_t * a);
+    int (*interface)(tran_t * a);
     ngx_stream_interface_srv_conf_t *ascf;
 
     ascf = conf;
@@ -144,13 +144,13 @@ ngx_stream_interface_rule(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         return NGX_CONF_ERROR;
     }
 
-    temp = dlsym(handle, value[1].data);
-    if (temp == 0)
+    interface = dlsym(handle, value[1].data);
+    if (interface == 0)
     {
         ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "Could not find the interface name: %s in library: %s", value[1].data, value[2].data);
         return NGX_CONF_ERROR;
     }
-    rule->module_interface = temp;
+    rule->module_interface = interface;
 
     return NGX_CONF_OK;
 }
