@@ -153,9 +153,5 @@ inline void interface_core(ngx_stream_session_t *s, ngx_chain_t *in, ngx_uint_t 
 				}
 			}
 		}
-
-		ngx_pfree(s->connection->pool, t->sockaddr);
-		ngx_pfree(s->connection->pool, t);
-
 	}
 }
